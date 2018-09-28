@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>bf02c2ce-89ad-4be2-b61c-9c2867764e09</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>NewDadsDoor.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>NewDadsDoor</Name>
+    <RootNamespace>NewDadsDoor</RootNamespace>
+    <InterpreterId>Global|PythonCore|3.6-32</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="classes.py" />
+    <Compile Include="constants.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="gui\controllers.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="gui\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="methods.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="tests\CompareTestSuite\classes.py" />
+    <Compile Include="tests\CompareTestSuite\helpers.py" />
+    <Compile Include="tests\CompareTestSuite\methods.py" />
+    <Compile Include="tests\CompareTestSuite\TestProgram\controllers.py" />
+    <Compile Include="tests\CompareTestSuite\TestProgram\panes.py" />
+    <Compile Include="tests\CompareTestSuite\TestProgram\__init__.py" />
+    <Compile Include="tests\CompareTestSuite\__init__.py" />
+    <Compile Include="tests\methods.py" />
+    <Compile Include="tests\test_classes.py" />
+    <Compile Include="tests\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="tests\CompareTestSuite\testdata\OVAL.CSV" />
+    <Content Include="tests\CompareTestSuite\testdata\Software %28BRD-NAS%29 - Shortcut.lnk" />
+    <Content Include="tests\CompareTestSuite\testdata\Test Data Comparison Workbook.xlsx" />
+    <Content Include="tests\CompareTestSuite\testdata\VALIDA.BAS" />
+    <Content Include="tests\CompareTestSuite\testdata\VALIDATION-REFERENCE.csv" />
+    <Content Include="tests\CompareTestSuite\TestProgram\__pycache__\controllers.cpython-36.pyc" />
+    <Content Include="tests\CompareTestSuite\TestProgram\__pycache__\panes.cpython-36.pyc" />
+    <Content Include="tests\CompareTestSuite\TestProgram\__pycache__\__init__.cpython-36.pyc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="gui\" />
+    <Folder Include="tests\" />
+    <Folder Include="tests\CompareTestSuite\" />
+    <Folder Include="tests\CompareTestSuite\testdata\" />
+    <Folder Include="tests\CompareTestSuite\TestProgram\" />
+    <Folder Include="tests\CompareTestSuite\TestProgram\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6-32" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
