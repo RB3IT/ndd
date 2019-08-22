@@ -23,6 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="calculations.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="classes.py" />
     <Compile Include="constants.py">
       <SubType>Code</SubType>
@@ -34,6 +37,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="methods.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="sketches\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tests\CompareTestSuite\classes.py" />
@@ -68,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="gui\" />
+    <Folder Include="sketches\" />
     <Folder Include="tests\" />
     <Folder Include="tests\CompareTestSuite\" />
     <Folder Include="tests\CompareTestSuite\testdata\" />

@@ -183,8 +183,8 @@ SLATLOOKUP =collections.OrderedDict([
     ## <1>
     ("3 5/8 INCH CROWN SLAT",dict(slatheight = 3.625, increaseradius = .5, 
            GAGE={
-               "20":dict(SG = "20", slatweight=.058514166),
-               "22":dict(SG = "22", slatweight=float("5.78666E-02"))
+               20:dict(SG = "20", slatweight=.058514166),
+               22:dict(SG = "22", slatweight=float("5.78666E-02"))
                })),
     ## <2>
     ("2 7/8 INCH CROWN SLAT",dict(slatheight = 2.875, increaseradius = .6,
@@ -216,11 +216,11 @@ CASTINGGAP = 3.5
 ##        2 springs, innerloss 3, 10 inches of space for first/outer spring => The second spring has 3 inches less space (7 inches)
 ##        3 springs, innerloss 3, 10 inches of space for first/outermost spring => Second spring has 7 inches, Third spring (smallest) has 4 inches of space available 
 CASTINGS = [
-    dict(name = "Standard 4 Pipe", type = "pipe", springs = 2, ods = [3.75, 2.75], castingod = 3.75, length = 3, innerloss = 3),
-    dict(name = "Standard 6 Pipe", type = "pipe", springs = 2, ods = [5.25, 3.75], castingod = 5.75, length = 6, innerloss = 6),
-    dict(name = "Standard 4 Spring", type = "spring", springs = 1, ods = [3.75,], castingod = 3.75, length = 3, innerloss = 3),
-    dict(name = "Standard 6 Spring", type = "spring", springs = 1, ods = [5.25,], castingod = 5.75, length = 6, innerloss = 3),
-    dict(name = "Standard 2 Spring", type = "spring", springs = 1, ods = [2.75,], castingod = 2.75, length = 1, innerloss = 1),
+    dict(name = "Standard 4 Pipe", type = "pipe", springs = 2, ods = [3.75, 2.75], castingod = 3.75, length = 3, innerloss = 3, weight = 0),
+    dict(name = "Standard 6 Pipe", type = "pipe", springs = 2, ods = [5.25, 3.75], castingod = 5.75, length = 6, innerloss = 6, weight = 0),
+    dict(name = "Standard 4 Spring", type = "spring", springs = 1, ods = [3.75,], castingod = 3.75, length = 3, innerloss = 3, weight = 0),
+    dict(name = "Standard 6 Spring", type = "spring", springs = 1, ods = [5.25,], castingod = 5.75, length = 6, innerloss = 3, weight = 0),
+    dict(name = "Standard 2 Spring", type = "spring", springs = 1, ods = [2.75,], castingod = 2.75, length = 1, innerloss = 1, weight = 0),
     ]
 
 CASTINGLOOKUP = {casting['name']:casting for casting in CASTINGS}
@@ -286,6 +286,9 @@ def iswiredict(wire):
                    )
 WIREODINDEX = sorted([2.75, 3.75, 5.625])
 
+## Default number of slats for the wrap
+WRAPLENGTH = 7
+
 DEFAULTS = {
     "2 1/2 INCH FLAT SLAT":dict(
         endlocks="STAMPED STEEL",
@@ -295,7 +298,10 @@ DEFAULTS = {
         endlocks="CAST IRON",
         gage=20
         ),
-
+    "3 5/8 INCH CROWN SLAT":dict(
+        endlocks="CAST IRON",
+        gage=20
+        ),
     }
 
 ## Number of Slats for the wrap

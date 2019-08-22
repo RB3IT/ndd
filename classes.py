@@ -1,5 +1,6 @@
 ## Builtin
 import functools
+import inspect
 import math
 
 ## Custom Module
@@ -8,6 +9,7 @@ from alcustoms import measurement
 
 ## This Module
 from NewDadsDoor.constants import *
+from NewDadsDoor import calculations
 
 """
 NOTES
@@ -24,50 +26,71 @@ Initial/Final Lever Arm:
     Increase in Radius from the slats wrapped around pipe.
 """
 
-def measurementconversion(function):
-    """ A Wrapper which checks if an instance method's 'value' argument is a string reperesenting a measurement
-   
-    Note that this function is for instance methods and automatically assumes "self"
-    Converts the string to inches as a float.
-    """
-    @functools.wraps(function)
-    def inner(self,*args,value=None,**kw):
-        argflag = False
-        ## If value is not provided, have to check if it is an argument
-        if value is None:
-            ## If there are no args, proceed as normal (value must therefore
-            ## be a keyword for the function, and therefore will be the
-            ## function's default). *args is just a formality.
-            if not args: return function(self,*args,**kw)
-            ## Otherwise, parse(assume) the first argument as value
-            args = list(args)
-            value = args.pop(0)
-            ## Make sure we track that we pulled value out so we can put it back
-            argflag = True
-        
-        ## Convert our value
+###################################################
+"""
+               MISC Classes and Functions
+                                                """
+###################################################
 
-        ## We'll allow for Feet to be passed as an argument as int/float
-        ## There's a chance that the measurment was provided as a string-format of an int/float
-        if isinstance(value,str):
-            try: value = float(value)
-            except: pass
-        ## Handle Int/Float assuming it represents feet
-        if isinstance(value,(int,float)):
-            value = value * 12
-        ## Otherwise, we attempt to parse the value
-        else:
-            value = measurement.convertmeasurement(value)
-        ## If Value was an arg, put it back
-        if argflag: args = [value,] + args
-        ## Otherwise, we can add it as a kw
-        else: kw['value'] = value
-        ## continue as normal
-        return function(self,*args,**kw)
+def measurementconversion(function):
+    """ A Wrapper which checks if an instance method's 'value' argument and converts it to a measurement.ImperialMeasure object.
+    """
+    sig = inspect.signature(function)
+    @functools.wraps(function)
+    def inner(*args,value=None,**kw):
+        ba = sig.bind(*args,**kw)
+        ba.apply_defaults()
+        if ba.arguments.get("value"):
+            ba.arguments['value'] = measurement.Imperial(ba.arguments.get("value"))
+        return function(*ba.args,**ba.kwargs)
     return inner
 
+class Angle():
+    def __init__(self,leg1, leg2, thickness, length):
+        self._material = "steel"
+        self._leg1 = 3
+        self._leg2 = 3
+        self._thickness = '1/8in'
+        self._length = None
+
+    @property
+    def leg1(self):
+        return self._leg1
+    @property
+    def leg2(self):
+        return self._leg2
+    @property
+    def thickness(self):
+        return self._thickness
+    @property
+    def length(self):
+        return self._length
+
+    @leg1.setter
+    @measurementconversion
+    def leg1(self,value):
+        self._leg1 = value
+    @leg2.setter
+    @measurementconversion
+    def leg2(self,value):
+        self._leg2 = value
+    @thickness.setter
+    @measurementconversion
+    def thickness(self,value):
+        self._thickness = value
+    @length.setter
+    @measurementconversion
+    def length(self,value):
+        self._length = value
+
+###################################################
+"""
+                    DOOR CLASSES
+                                                """
+###################################################
+
 class Door():
-    def __init__(self, clearopening_height, clearopening_width, upset = None, stopsize = 2):
+    def __init__(self, clearopening_height, clearopening_width, upset = None, stopsize = 2, mounting = "interior"):
         self.pipefactory = Pipe
         self.curtainfactory = Curtain
         self.tracksfactory = Tracks
@@ -84,6 +107,8 @@ class Door():
         if upset is None: upset = .25
         self.upset = upset
         self.stopsize = stopsize
+        self.mounting = mounting
+        self.accessories = list()
 
     @property
     def curtain(self):
@@ -101,9 +126,12 @@ class Door():
         return self._pipe
     @pipe.setter
     def pipe(self,value):
-        if not isinstance(value,Pipe): raise AttributeError("Door's pipe must be Pipe Instance")
-        self._pipe = value
-        self.pipe.door = self
+        if value:
+            if not isinstance(value,Pipe): raise AttributeError("Door's pipe must be Pipe Instance")
+            self._pipe = value
+            self.pipe.door = self
+        else:
+            self._pipe = None
 
     @property
     def hood(self):
@@ -173,7 +201,7 @@ class Door():
     @bracketplatesize.setter
     @measurementconversion
     def bracketplatesize(self,value):
-        if value and not isinstance(value,(int,float)):
+        if value and not isinstance(value,(int,float, measurement.Measurement)):
             raise AttributeError("Door.bracketplatesize must be a size or None")
         if not value:
             self._bracketplatesize = None
@@ -191,10 +219,11 @@ class Door():
         Note that for a door with standard upset, bracket plates, and bottomabar this number
         is constant regardless of size of door
         """
-        return self.pipecenterlineheight - self.stopheight + self.curtain.bottomheight
+        return calculations.curtain_openheight(self.pipecenterlineheight, self.stopheight, self.curtain.bottomheight)
 
     @property
     def stopheight(self):
+        """ The height at which the Stops engage the bottom bar (or other stop) """
         return self.clearopening_height + self.stopsize
 
     @property
@@ -209,7 +238,7 @@ class Door():
     @property
     def finalradius(self): ## FL
         """ Final Lever Arm/Final distance from center of pipe to pipe centerline """
-        return self.initialradius + (self.turnstoraise * self.curtain.increaseradius)
+        return calculations.curtain_finalradius(self.initialradius, self.turnstoraise, self.curtain.increaseradius)
 
     @property
     def hangingweight_closed(self): ## HW
@@ -218,89 +247,65 @@ class Door():
 
     @property
     def hangingweight_open(self): ## WU
-        """ Weight of the Curtain when the door is Open """
-        weight = self.curtain.weight_open
-        if self.stopheight >=192: return weight * 1.2
-        if self.stopheight < 50: return weight + 5
-        #if 50 < self.curtain.stopheight < 100: return weight + 10
-        return weight * 1.1
+        """ Weight of the Curtain when the door is Open with safety factor """
+        return calculations.safetyfactor_curtain_hangingweight_open(self.curtain.weight_open,self.stopheight)
 
     @property
     def pipecenterlineheight(self): ## HC
         """ Height from the floor to the center of the Pipe """
         ## Stop Height + Upset + Half Bracket Plate Height (Pipe is centered on bracket plates)
-        return self.stopheight + self.upset + self.bracketplate.height/2
+        return calculations.pipe_centerlineheight(self.stopheight, self.upset, self.bracketplate.height/2)
 
     @property
     def wall_length(self):
         """ Returns the necessary height to cover the openheight, stops, upset, and Bracket Plates """
-        return self.stopheight + self.upset + self.bracketplate.height
+        return calculations.tracks_wall_length(self.stopheight, self.upset, self.bracketplate.height)
 
     @property
     def preturns(self): ## PT
         """ Number of turns required in order to achieve requiredtorque_open """
-        return self.requiredtorque_open / self.torqueperturn 
+        return calculations.pipe_preturns(self.requiredtorque_open, self.torqueperturn)
 
     @property
     def requiredtorque_closed(self): ## TD
-        """ Required amount of force required to lift door """
-        return self.initialradius * self.hangingweight_closed
+        """ Required amount of force required to lift door while closed """
+        return calculations.pipe_requiredtorque_closed(self.initialradius, self.hangingweight_closed)
 
     @property
     def requiredtorque_open(self): ## TU
         """ Required amount of force required to hold the door open """
-        return self.finalradius * self.hangingweight_open
+        return calculations.pipe_requiredtorque_open(self.finalradius, self.hangingweight_open)
 
     @property
     def torqueperturn(self): ## IP
-        """ The amount of torque (inch/pound) for each turn (IPPT in handbook)
-        
-        Handbook notes this should be rounded up to nearest 1/8.
-        """
-        return rounduptofraction(
-            (self.requiredtorque_closed - self.requiredtorque_open) / self.turnstoraise,
-            1/8)
+        """ The amount of torque (inch/pound) for each turn (IPPT in handbook) """
+        return calculations.pipe_torqueperturn(self.requiredtorque_closed, self.requiredtorque_open, self.turnstoraise)
 
     @property
     def totalturns(self): ## TT
         """ Total number of time the pipe will be turned """
-        return self.turnstoraise + self.preturns    
+        return calculations.pipe_totalturns(self.turnstoraise, self.preturns)
         
 
     @property
     def turnstoraise(self): ## TR
-        """ Number of Barrel Rotations required to fully raise the door (TR)
-
-        Equation to Raise door is based on: 2 * Pi * R * T + Pi * R1 * T**2 = SH
-        Where R: Pipe (Initial, Total) Radius, R1: Radius Increase each Turn
-        T: Turns to Raise (TR otherwise), SH: Stop Height
-
-        This equation reflects that the Stop Height (when rolled) will be wrapped
-        around the pipe's circumference on each turn (2 * Pi * R * T) plus an
-        additional distance on each turn based on the layers beneath it (Pi * R1 * T**2).
-
-        The equation is converted to quadratic form Pi*R1*T**2  +  2*Pi*R*T  -SH
-        (A*X**2 + B*X + C) which then can be solved with the quadratic equation:
-        ( -B +/- sqrt(B**2 - 4AC) ) / 2A
-        Being ( -2*Pi*R +/- sqrt((2*Pi*R)**2 - 4 * (R1*Pi) * (-SH)) ) / (2 * Pi * R1)
-        """
-        ## A: Extra Circumference each Turn
-        A = math.pi * self.curtain.increaseradius
-        ## B: Base Circumference each Turn (per Pipe)
-        B = 2 * math.pi * self.pipe.totalradius
-        ## C: Stop Height
-        C = -self.stopheight
-        ## Solve quadratic
-        return (-B + math.sqrt(B**2 - 4*A*C)) / (2*A)
+        """ Number of Barrel Rotations required to fully raise the door (TR) """
+        return calculations.door_turnstoraise(self.stopheight, self.pipe.totalradius, self.curtain.increaseradius)
 
     def getwraplength(self):
         """ Gets the calculated distance for the wrap """
-        return \
-            2 * math.pi * self.pipe.totalradius * (.75 - self.pipe.getadjusterratio()) +\
-           self.pipecenterlineheight - self.stopheight
+
+        ## If no pipe is available, we'll go with the default wrap length
+        if not self.pipe: return calculations.curtain_getwraplength_estimate(self.curtain.slatsections()[0].slat.slatheight)
+
+        return calculations.curtain_getwraplength(self.pipecenterlineheight - self.stopheight, self.pipe.totalradius, self.pipe.getadjusterratio())
 
     def validatepipesize(self):
-        return self.pipe.weight + self.curtain.hangingweight_closed <= self.pipe.maxdeflectionweight * .97
+        return calculations.validation_pipesize(self.pipe.weight, self.hangingweight_closed, self.pipe.maxdeflectionweight)
+
+    def validatepipeassembly(self):
+        """ Returns whether the pipe's assembly is valid for the given curtain. """
+        return self.pipe.assembly.validate(ippt = self.torqueperturn, turns = self.totalturns)
 
     def validatepipeassembly(self):
         """ Returns whether the pipe's assembly is valid for the given curtain. """
@@ -379,10 +384,46 @@ class Hood():
         return self._width
 
 class Tracks():
-    """ TODO """
+    
+    type = "3 Piece Tracks"
+    def __init__(self,door, inner = None, outer = None, wall = None):
+        self.door = door
+        self._inner = None
+        self._outer = None
+        self._wall = None
+
+        self.inner = inner
+        self.outer = outer
+        self.wall = wall
+
+    @property
+    def outer(self):
+        return self._outer
+    @property
+    def inner(self):
+        return self._inner
+    @property
+    def wall(self):
+        return self._wall
+
+    @outer.setter
+    def outer(self,value):
+        if value is None:
+            self._outer = None
+            return
+        
+    def get_default(self, angle):
+        """ Return an angle appropriate for the given piece of Track.
+
+            angle should be "outer","inner", or "wall".
+        """
+        if angle not in ["outer","inner","wall"]:
+            pass
  
 class ExtrudedGuides(Tracks):
     """ TODO """
+    
+    type = "Extruded Tracks"
 
 
 class Curtain():
@@ -394,40 +435,15 @@ class Curtain():
 
     def slatlength(self,section):
         """ A Curtain's Slat length is often wider than the width """
-        ## TODO Create FireDoorSection Subclass
-        clow = self.door.clearopening_width
-        length = clow
-        if not getattr(section,"endlockpattern",None):
-            if getattr(section,"slattype",None) in ["3 5/8 INCH CROWN SLAT","2 7/8 INCH CROWN SLAT"]: length += 1
-            elif getattr(section,"slattype",None) == "2 1/2 INCH FLAT SLAT": length += .25
-        if getattr(section,"endlockpattern",None) and (section.endlockpattern.endlock == "CAST IRON" and section.slattype == "2 1/2 INCH FLAT SLAT"):
-           length -= .5
-
-        if isinstance(self.door.tracks,ExtrudedGuides):
-            return length + 2.5
-        if getattr(section,"slattype",None) in ["3 5/8 INCH CROWN SLAT","2 7/8 INCH CROWN SLAT"]:
-            if not getattr(section,"endlockpattern",None) and section.endlockpattern.windlocks:
-                if clow < 149: return length + 3.5
-                if clow <=221: return length + 3.875
-        if getattr(section,"slattype",None) == "2 7/8 INCH CROWN SLAT":
-            if getattr(section,"endlockpattern",None) and section.endlockpattern.windlocks:
-                if clow < 293: return length + 3.875
-                return length + 4.875
-        if not isinstance(self.door.tracks,ExtrudedGuides):
-            if clow < 149: return length + 3.5
-            if clow < 221: return length + 3.875
-            if clow < 293: return length + 4.5
-            if clow <= 365: return length + 5.5
-        if getattr(section,"slattype",None) == "2 1/2 INCH FLAT SLAT":
-            if not getattr(section,"endlockpattern",None) and section.endlockpattern.windlocks:
-                if clow < 149: return length + 4.25
-                if clow < 197: return length + 4.625
-            else:
-                if clow < 293: return length + 4
-                return length + 5
-        if getattr(section,"slattype",None) == "MIDGET CROWN SLAT < 2 INCH >":
-            if clow < 149: return length + 3.75
-            return length + 4.125
+        endlocks = getattr(section,"endlockpattern",None)
+        windlocks = None
+        if endlocks:
+            windlocks = endlocks.windlocks
+            endlocks = endlocks.endlock
+        slattype = getattr(section,"slattype", self.slattype)
+        tracks = self.door.tracks
+        if tracks: tracks = tracks.type
+        return calculations.curtain_slatlength(self.door.clearopening_width, slattype= slattype, endlocks = endlocks, windlocks = windlocks, tracks = tracks)
 
     def getweight(self,height):
         """ Returns the weight of the curtain at a certain height (assumes that any additional weight is supported by the pipe (as opposed to springs) """
@@ -478,6 +494,13 @@ class Curtain():
     def slatsections(self):
         """ Returns a list of all SlatSection subclass instances in the Curtain. """
         return [section for section in self.sections if isinstance(section,SlatSection)]
+
+    @property
+    def slattype(self):
+        types = {section.slat.slattype for section in self.slatsections()}
+        if len(types) == 1:
+            return list(types)[0]
+        raise ValueError("Cannot Determine Slattype of a curtain with multiple slattypes.")
 
     @property
     def curtainheight(self):
@@ -584,18 +607,13 @@ class BottomBar(Section):
 
     def getfeederslatweight(self):
         """ Returns the weight of the feeder slat (not a property to avoid conflict with feederslatweight attribute) """
-        return self.feederslatweight * self.slatlength * .65
+        return calculations.bottombar_feederslatweight(self.feederslatweight, self.slatlength)
 
     @property
     def slopeweight(self):
         """ Returns the weight added by the slopped portion of the bottom bar """
-        length = self.slatlength
         if not self.slope: return 0
-        slopereach =  self.slope + 3
-        reachsquarearea = slopereach * (length  + 1)
-        slopetrianglearea = self.slope * (length + 1) / 2
-        diff_feet = (reachsquarearea - slopetrianglearea) / 144 * 5
-        return diff_feet + (length + 1) * .05316
+        return calculations.bottombar_slopeweight(self.slatlength, self.slope)
 
     @property
     def slatlength(self):
@@ -607,6 +625,8 @@ class BottomBar(Section):
 class SlatSection(Section):
     def __init__(self, curtain=None, endlockpattern = None, slats = 0, slat = None):
         super().__init__(curtain=curtain)
+        if isinstance(endlockpattern,Endlock):
+            endlockpattern = EndlockPattern(endlockpattern)
         if not endlockpattern is None and not isinstance(endlockpattern,EndlockPattern):
             raise AttributeError("endlockpattern must be None or EndlockPattern instance")
         self.endlockpattern = endlockpattern
@@ -655,16 +675,13 @@ class PerforatedSlats(SlatSection):
         super().__init__(curtain=curtain, endlockpattern=endlockpattern, slats=slat, slattype=slattype, slatgage=slatgage)
     @property
     def slatlength(self):
-        clow  = self.curtain.door.clearopening_width
-        length = super().slatlength
-        if isinstance(self.curtain.door.guides,ExtrudedGuides):
-            return length
-        if not self.endlockpattern.windlocks:
-            if clow <= 149: return length + 3.875
-            if clow < 264: return length + 4.25
-        else:
-            if clow <= 293: return length + 4
-            return length + 5
+        endlocks = getattr(section,"endlockpattern",None)
+        windlocks = None
+        if endlocks:
+            windlocks = endlocks.windlocks
+            endlocks = endlocks.endlock
+        slattype = getattr(section,"slattype")
+        return calculations.curtain_slatlength_perforatedslats(self.door.clearopening_width, slattype= slattype, endlocks = endlocks, windlocks = windlocks, tracks = tracks)
 
     @property
     def weight(self):
@@ -672,16 +689,13 @@ class PerforatedSlats(SlatSection):
     @property
     def perforationsperslat(self):
         """ Determine number of perforation Windows based on Curtain Width """
-        ## Windows every 8.5 Inches, skip first and last window
-        ## This calculation is from the original, but I would probably like it
-        ## better written "(self.slatlength - edgepadding)/8.5" so that the distance
-        ## from the edge can be customized (as opposed to being 8.5)
-        return self.slatlength/8.5 - 2
+        return calculations.curtain_perforationsperslat(self.slatlength)
 
     @property
     def perforatedweightloss(self):
         ## (Slat Weight per Window-size) * Weight Loss Per Window *  Number of perforations/Slat * Number of Slats
-        return (self.slat.slatweight/5.25) * 4.648175 * self.curtain.perforationsperslat * self.slats
+        return calculations.curtain_perforatedweightloss(self.slat.slatweight, self.curtain.perforationsperslat, self.slats)
+
 
 class RollingGrilleSection(Section):
     def __init__(self, curtain=None, rodtype="ALUM. LINKS/PLASTIC TUBES", rods = 0, lexaninserts = False):
@@ -773,21 +787,12 @@ class EndlockPattern():
 
     def getendlocks(self,slats):
         """ Returns a tuple of the number of (endlocks,windlocks) to be used on a given number of slats """
-        if slats == 0: return (0,0)
-        if not self.windlocks:
-            return (math.ceil(slats/2)*2,0)
-        singleendlocks = math.ceil(slats/2)
-        singlewindlocks = (singleendlocks / self.windlocks)
-        return (singleendlocks * 2, singlewindlocks * 2)
+        return calculations.curtain_getendlocks(slats, self.windlocks)
 
     def getweight(self,slats):
         """ Returns the endlock weight given the number of slats that have endlocks """
-        if slats == 0: return 0
-        if self.windlocks:
-            endlockweight = (((slats / self.windlocks) * .656) / slats ) + .17
-        else: endlockweight = self.endlock.endlockweight
-        ## Endlock on each side
-        return slats * endlockweight * 2
+        return calculations.curtain_getendlockweight(slats, self.endlock.weight, self.windlocks)
+
 
 class Endlock():
     """ At current, this class isn't really necessary. However it is used to follow
@@ -800,12 +805,15 @@ class Endlock():
         self.endlocktype = endlocktype
 
     @property
-    def endlockweight(self):
+    def weight(self):
         return ENDLOCKLOOKUP[self.endlocktype]['endlockweight']
 
 
 class Pipe():
-    def __init__(self,pipewidth = None, shell = None, shaft = None, assembly = None, cycles = None, barrelrings = True, adjuster = False):
+    def __init__(self,door = None, pipewidth = None, shell = None, shaft = None, assembly = None, cycles = None, barrelrings = True, adjuster = False):
+        self._door = None
+        if door:
+            self.door = door
         self._pipewidth = 0
         if pipewidth:
             self.pipewidth = pipewidth
@@ -818,6 +826,14 @@ class Pipe():
         self.cycles = cycles
         self.adjuster = int(adjuster)
 
+    @property
+    def door(self):
+        return self._door
+    @door.setter
+    def door(self,door):
+        if door and not isinstance(door,Door):
+            raise AttributeError("Pipe's Door must be a Door instance")
+        self._door = door
     @property
     def assembly(self):
         return self._assembly
@@ -866,6 +882,8 @@ class Pipe():
     @shell.setter
     def shell(self,value):
         if value is not None:
+            if isinstance(value,dict):
+                value = value['size']
             self._shell = int(value)
 
     @property
@@ -873,7 +891,12 @@ class Pipe():
         ## NOTE: In the original code there was no check that the spring would actually fit inside the pipe
         ## (it was just programmed not to reach that point) so there is no hard numbers on ID of pipes
         ## It is fastest, at this point, to assume that pipes will generally have less than 1/4 inch walls
-        return self.shell['size'] - .25
+        return self.size - .25
+
+    @property
+    def size(self):
+        """ Size of the pipe shell """
+        return self.shell['size']
 
     @property
     def radius(self):
@@ -905,13 +928,8 @@ class Pipe():
 
     @property
     def maxdeflectionweight(self):
-        """ Amount of weight that the pipe can support without bending
-
-        This equation was taken as-is from the source code; its origins could not
-        be found the handbook.
-        """
-        ## I4 / Width-in-feet^2 * 38667
-        return self.shell['I4'] / (self.pipewidth/12) ** 2 * 38667
+        """ Amount of weight that the pipe can support without bending """
+        return calculations.pipe_maxdeflectionweight(self.shell['I4'], self.pipewidth)
 
     def getadjusterratio(self):
         if not self.adjuster: return 0
@@ -965,6 +983,8 @@ class Assembly():
         return self.sockets.popsocket(*args,**kw)
     def sockettype(self,*args,**kw):
         return self.sockets.sockettype(*args,**kw)
+    def clear(self,*args,**kw):
+        return self.sockets.clear(*args,**kw)
     ## Stats
     @property
     def pipe(self):
@@ -1081,6 +1101,9 @@ class AssemblySockets():
         except IndexError: raise IndexError(f"Could not remove index: {index}")
         del self._sockets[index]
         return socket
+    def clear(self):
+        """ Clears all castings from the assembly """
+        self._sockets.clear()
 
     def __eq__(self,other):
         if isinstance(other,AssemblySockets):
@@ -1131,6 +1154,11 @@ class Socket():
     def springs(self):
         return list(self._springs)
 
+    @property
+    def weight(self):
+        ## TODO: This is currently a hack to ensure it works. We should probably do something else
+        return (self.castings.weight if self.castings else 0) + sum(spring.weight for spring in self)
+
     def __iter__(self, *args, **kw):
         """ A shortcut for "for spring in socket.springs" """
         return self.springs.__iter__(*args,**kw)
@@ -1166,7 +1194,7 @@ class Socket():
         ## For each spring, make sure that max turns is greater than actual turns
         for spring in self.springs:
             if not spring.validatemaxturns(turns):
-                print("Fail a")
+                #print("Fail a")
                 return False
 
         ## Validators for compound
@@ -1174,20 +1202,20 @@ class Socket():
             ## Compare ID to next OD
             for i in range(len(self.springs[:-1])):
                 if self.springs[i].id <= self.springs[i+1].od:
-                    print("Fail b")
+                    #print("Fail b")
                     return False
 
             ## Make sure inner springs are shorter by an amount based on size
             ## short based on size
             short = 6
             if self.springs[0].od >3.75:
-                short = 9.600001 ## <- ... I dunno...
+                short = 9.600001 ## <- ... I dunno why this is...
             ## for each spring from the outermost to the 2nd-to-last innermost,
             ## compare the outerspring to the next (inner) spring
             for i in range(len(self.springs[:-1])):
                 ## Coiledlength of next inner spring is is greater than the outerspring + short (clearance allowance)
                 if self.springs[i+1].totallength(turns) > self.springs[i].totallength(turns) - short:
-                    print("Fail c")
+                    #print("Fail c")
                     return False
 
         ## Test existence of a Casting
@@ -1236,7 +1264,7 @@ class CastingSet():
         if not isinstance(casting,dict):
             raise TypeError(f"Invalid Casting: {casting}")
         ## These attrs are required for casting dicts
-        missing = [attr for attr in ["type","springs","ods","castingod","length","innerloss"] if casting.get(attr,None) is None]
+        missing = [attr for attr in ["type","springs","ods","castingod","length","innerloss","weight"] if casting.get(attr,None) is None]
         if missing:
             raise ValueError("Casting missing the following values: {}")
         self._castings.append(casting)
@@ -1245,11 +1273,14 @@ class CastingSet():
     def outside_length(self):
         return self.castings[0]['length'] + self.castings[-1]['length']
 
+    @property
+    def weight(self):
+        return sum(casting['weight'] for casting in self.castings)
+
     def __eq__(self,other):
         if isinstance(other,CastingSet):
             return all(x==y for x,y in itertools.zip_longest(self._castings,other._castings))
 
-    ## TODO: Casting weight?
 
 def getcasting(*springs):
     """ Attempts to select castings for the given springs """
@@ -1465,28 +1496,6 @@ f"""Spring:
     def __repr__(self):
         return f"{self.__class__.__name__} Object ({self.wirediameter}x{self.od}x{self.coiledlength})"
 
-def create_curtain(door,slattype = None):
-    """ Helper function to autopopulate a door's Curtain.
-
-        This function will replace any existing curtain on the pipe with
-        a curtain containing sufficient slats of the given type (default
-        2-1/2 Flat with default endlocks for that slattype) and a
-        standard Bottom Bar.
-    """
-    if not isinstance(door,Door):
-        raise ValueError("create_curtain requires a door object")
-    if slattype is None: slattype = "brd"
-    slat = Slat(slattype)
-    door.curtain = None
-    door.setcurtain()
-    curtain = door.curtain
-    slats = SlatSection(curtain, slat = slat)
-    slats.endlockpattern = EndlockPattern(slat.defaultendlocks)
-    curtain.append(slats)
-    bottombar = BottomBar(slat, curtain)
-    curtain.append(bottombar)
-    slats.slats = slats.getnumberslats(curtain.curtainshort())    
-
 def validate_assembly_pipe(pipe):
     """ Validation method for Asssembly Generation Functions """
     if pipe is None: pipe = PIPESIZES[max(PIPESIZES)]
@@ -1511,20 +1520,20 @@ def validate_compound_assemblies(func):
         def validator(assembly):
             """ The actual validation function """
             if not all(socket.validate(turns) for socket in assembly.sockets):
-                print("fail 1")
-                for socket in assembly.sockets:
-                    print(socket)
+                #print("fail 1")
+                #for socket in assembly.sockets:
+                    #print(socket)
                 return False
             if not all(all(spring.validatemaxturns(turns) for spring in socket) for socket in assembly.sockets):
-                print("fail 2")
+                #print("fail 2")
                 return False
             if not assembly.validatetorque(torque):
-                print("fail 3")
+                #print("fail 3")
                 return False
             return True
 
         assemblies = func(torque = torque, turns = turns, pipe = pipe,**kw)
-        print(func)
+        #print(func)
         return list(filter(validator,assemblies))
     return inner
 
@@ -1669,7 +1678,7 @@ def generate_all_assemblies(torque, turns, pipe = None):
                 generate_compound_general,
                 ]:
         res = fun(torque,turns,pipe = pipe)
-        print(fun,res)
+        #print(fun,res)
         output.extend(res)
 
     return output
@@ -1725,7 +1734,7 @@ def generate_compound_general(torque,turns,pipe = None):
         if st >= torque * .95:
             continue
         spring.setlengthbytorque(st)
-        print(torque, st, spring.lift)
+        #print(torque, st, spring.lift)
         remaining = torque - spring.lift
         maxod = max(od for od in SPRINGOD if od and od < spring.id)
         modmp = turns * remaining / pipe.cyclerating
