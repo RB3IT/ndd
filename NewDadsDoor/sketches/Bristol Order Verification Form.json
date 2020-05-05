@@ -1,0 +1,236 @@
+[
+  {
+    "name": "order.date",
+    "display": "6/5/2009",
+    "x": 2158.0,
+    "y": 203.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 29,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 2086, 182, 2230, 225 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "order.work_order",
+    "display": "12345",
+    "x": 2158.0,
+    "y": 288.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 29,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 2107, 267, 2209, 310 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.tracks.outer.length",
+    "display": "10ft 12-13/16in",
+    "x": 1735.0,
+    "y": 1299.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 22,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 1647, 1283, 1824, 1316 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.tracks.wall.length",
+    "display": "12ft 11-15/16in",
+    "x": 637.0,
+    "y": 1326.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 22,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 549, 1310, 726, 1343 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.bracketplatesize",
+    "display": "18\"",
+    "x": 1739.0,
+    "y": 718.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 22,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 1719, 702, 1759, 735 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.width_insidetracks",
+    "display": "12ft 11-13/16in",
+    "x": 1199.0,
+    "y": 1774.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 22,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 1111, 1758, 1288, 1791 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.width_outsidetracks",
+    "display": "12ft 11-13/16in",
+    "x": 1250.0,
+    "y": 1839.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 22,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 1162, 1823, 1339, 1856 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "order.customer.name",
+    "display": "Delaware Valley Overhead Door",
+    "x": 958.0,
+    "y": 2175.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 60,
+      "weight": "bold",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 398, 2130, 1519, 2220 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "order.po",
+    "display": "JoJo's Bizzare Shop",
+    "x": 1002.0,
+    "y": 2378.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 60,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 684, 2333, 1320, 2423 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.mounting",
+    "display": "Exterior",
+    "x": 2159.0,
+    "y": 2161.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 45,
+      "weight": "bold",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 2050, 2127, 2268, 2195 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "door.curtain.slattype",
+    "display": "3\" Flat",
+    "x": 2159.0,
+    "y": 2296.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 45,
+      "weight": "bold",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 2067, 2262, 2251, 2330 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "locking",
+    "display": "Pin Locks",
+    "x": 2159.0,
+    "y": 2424.0,
+    "anchor": "Center",
+    "font": {
+      "family": "Times New Roman",
+      "size": 45,
+      "weight": "bold",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 2032, 2390, 2286, 2458 ],
+    "multiple lines": [],
+    "linespacing": 0
+  },
+  {
+    "name": "notes",
+    "display": "Notes",
+    "x": 267.0,
+    "y": 2483.0,
+    "anchor": "North-West",
+    "font": {
+      "family": "Times New Roman",
+      "size": 43,
+      "weight": "normal",
+      "slant": "roman",
+      "underline": 0,
+      "overstrike": 0
+    },
+    "bbox": [ 258, 2487, 2429, 2745 ],
+    "multiple lines": 3,
+    "linespacing": 4
+  }
+]

@@ -1,0 +1,97 @@
+Data,Array Index,Line Numbers
+jobnumber,0,10730
+Hand,1,10730
+Model,2,10730
+width,3,10750
+stopheight,4,10750
+Between Brackets,5,10760
+shell,6,10770
+pipewidth,7,10770
+Support Tubes,8,10780
+Upset,9,"1,078,010,790"
+Guide Type,10,"1,078,010,790"
+Wall Angle,11,10790
+Middle Angle,12,10810
+Front Angle,13,10810
+Pipe Center Line,14,10830
+Heat Expansion Gap,15,10830
+Hanging Weight Closed,16,10840
+Hanging Weight Open,17,10840
+Initial Lever Arm,18,10850
+Turns to Raise,19,10850
+Final Lever Arm,20,10860
+Torque Required Closed,21,10860
+Torque Required Open,22,10870
+Pre Turns,23,10870
+Required Torque Per Turn,24,10880
+Total Turns,25,10880
+Grille Vision Section,26,10890
+Grille Height,27,10900
+Grille Center,28,10900
+Grille Pattern,29,10920
+Grille First Tube,30,10930
+Grille Standard Tube,31,10930
+Grille Total Links,32,10930
+Grille Rods,33,10940
+Grille Rod Length,34,10940
+slattype,35,"1,095,010,960"
+slatgauge,36,"1,095,010,960"
+Numer of Top Slats,37,"109,901,100,011,030"
+Number of Bottom Slats,38,"10,990,110,001,103,000,000"
+Solid Bottom Height,39,10990
+slatlength,40,"10990,11020, 11220,11240"
+Bottom Slat Length,41,"1,100,011,230"
+Number of Perforated Slats,42,11010
+First Perforated Slat From End,43,11010
+First Perforated Slat From Bottom,44,11010
+Total Number of Slats,45,11020
+Bottom Bar Slope,46,11040
+Bottom Bar Weight,47,"1,104,011,050"
+Outer Spring Gauge,48,11115
+Outer Spring OD,49,11115
+Outer Spring Length,50,11115
+Outer Spring Stretch,51,11115
+Outer Spring Torque,52,11120
+Outer Spring Max Turns,53,11120
+Outer Spring Weight,54,11120
+Inner Spring Gauge,55,11130
+Inner Spring OD,56,11130
+Inner Spring Length,57,11130
+Inner Spring Stretch,58,11130
+Inner Spring Torque,59,11140
+Inner Spring Max Turns,60,11140
+Inner Spring Weight,61,11140
+Cycles,62,11070
+Total Spring Torque,63,11150
+Total Spring Weight,64,11150
+Pipe Weight,65,11180
+Max Pipe Deflection,66,11180
+Number Non-Insulated Wrap Slats,67,11220
+Number of Insolated Top Slats,68,11220
+Insolated Total Slats,69,11230
+Slats to Centerline,70,11240
+Wrap,71,11240
+Wall Angle Thickness,72,11185
+windlocks,73,11185
+bottombartype,74,11185
+endlockweight,75,11185
+Endlock Total Weight,76,11185
+Grille Weight,77,11185
+barrelrings,78,11185
+increaseradius,79,11186
+slatweight,80,11186
+slatheight,81,11187
+bottombarheight,82,11187
+bracketplateheight,83,11187
+adjuster,84,11188
+adjusterratio,85,11188
+totalnumberslats,86,11188
+slatweight to Centerline,87,11188
+bottombar angleweightperfoot,88,11188
+Safety Edge Weight,89,11188
+Astragal Weight,90,11188
+Slope Weight,91,11188
+Feeder Slat Weight,92,11188
+Safety Edge,93,11188
+Edge Weight,94,11189
+Perforated Weight Loss,95,11189
